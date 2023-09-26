@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Webcam Stream</title>
+</head>
+<body>
+    <h1>Webcam Stream</h1>
+    <video id="webcam" autoplay></video>
+    <button id="captureButton">Chụp ảnh</button>
+    <input type="file" accept="image/*" id="fileInput" style="display: none;">
+
+    <script>
+        const video = document.getElementById('webcam');
+        const captureButton = document.getElementById('captureButton');
+        const fileInput = document.getElementById('fileInput');
+
+        async function startWebcam() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+            } catch (error) {
+                console.error('Lỗi khi truy cập vào webcam: ', error);
+            }
+        }
+
+        function captureImage() {
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            canvas.toBlob(uploadImage, 'image/png');
+        }
+
+        function uploadImage(blob) {
+            const formData = new FormData();
+            // const imageBytes = new Uint8Array(atob(blob.split(',')[1]).split('').map(char => char.charCodeAt(0)));
+            formData.append('image', blob,"capture.png");
+            console.log(typeof(formData))
+            base_url = 'http://127.0.0.1:8000';
+            endpoint='upload/';
+            api_url=base_url+"/"+endpoint;
+            url='https://2c57-2405-4802-1c9e-b90-48f7-f482-1973-a684.ngrok-free.app/upload/'
+            fetch(url, {
+                method: 'POST',
+                // headers: {
+                //     'Content-Type': 'application/octet-stream', // Đặt tiêu đề Content-Type là application/octet-stream
+                // },
+                body: formData, // Gửi dữ liệu ảnh dưới dạng bytes
+                        })
+            .then(response => response.json())
+            .then(data => {
+                // Xử lý phản hồi từ API (nếu cần)
+                console.log(data);
+            })
+            .catch(error => {
+                console.error('Lỗi khi gửi ảnh đến API: ', error);
+            });
+        }
+
+        startWebcam();
+
+        captureButton.addEventListener('click', captureImage);
+    </script>
+</body>
+</html>

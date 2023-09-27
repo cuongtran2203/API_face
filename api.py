@@ -2,13 +2,21 @@ from fastapi import FastAPI, File, UploadFile,Request
 from fastapi.responses import JSONResponse,HTMLResponse
 import shutil
 import os
+from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 import base64
 import io
 from PIL import Image
-import aiofiles
+
 
 app = FastAPI()
+# app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates")
+
+@app.get("/", response_class=HTMLResponse)
+async def index(request: Request):
+   return templates.TemplateResponse('index.html', {"request": request})
+
 class ImageData(BaseModel):
     image_data: str  # Dùng str cho base64-encoded image data
 # Đường dẫn lưu trữ tệp ảnh

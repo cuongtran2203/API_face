@@ -39,14 +39,15 @@
             formData.append('image', blob,"capture.png");
             console.log(typeof(formData))
             base_url = 'http://127.0.0.1:8000';
+            
             endpoint='upload/';
             api_url=base_url+"/"+endpoint;
-            url='https://2c57-2405-4802-1c9e-b90-48f7-f482-1973-a684.ngrok-free.app/upload/'
-            fetch(url, {
+            // url='https://localhost:8000/upload/'
+            fetch(api_url, {
                 method: 'POST',
-                // headers: {
-                //     'Content-Type': 'application/octet-stream', // Đặt tiêu đề Content-Type là application/octet-stream
-                // },
+                headers: {
+                    'Content-Type': 'application/octet-stream', // Đặt tiêu đề Content-Type là application/octet-stream
+                },
                 body: formData, // Gửi dữ liệu ảnh dưới dạng bytes
                         })
             .then(response => response.json())

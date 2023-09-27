@@ -7,29 +7,43 @@ from pydantic import BaseModel
 import base64
 import io
 from PIL import Image
-
+import numpy as np
+import cv2
+import base64
+class DataRequest(BaseModel):
+    text_data: str
+    numpy_data: list
 
 app = FastAPI()
-# app.mount("/static", StaticFiles(directory="static"), name="static")
-templates = Jinja2Templates(directory="templates")
 
-@app.get("/", response_class=HTMLResponse)
-async def index(request: Request):
-   return templates.TemplateResponse('index.html', {"request": request})
-
-class ImageData(BaseModel):
-    image_data: str  # Dùng str cho base64-encoded image data
 # Đường dẫn lưu trữ tệp ảnh
 UPLOAD_FOLDER = "uploads"
+dir=None
+save_image=None
+count=0
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
 @app.post("/upload/")
 async def create_upload_file(request:Request):
-    form_data = await request.form()
-    file = form_data["image"]  # "image" là tên của trường trong form
-
-    # Lưu tệp vào ổ đĩa hoặc xử lý nó theo ý muốn
-    with open(file.filename, "wb") as f:
-        f.write(await file.read())
+    global dir,save_image,count
+    data = await request.body()
+    # print(data)
+    if len(data)>100:
+        image=io.BytesIO(data)
+        save_im=Image.open(image)
+        image_np=np.array(save_im,dtype=np.uint8)
+        save_image=cv2.cvtColor(image_np,cv2.COLOR_RGB2BGR)
+    else:
+        dir=data.decode()
+        print("Full name: ",data.decode())
+    path=os.path.join(UPLOAD_FOLDER,dir)
+    if  not os.path.exists(path):
+        os.makedirs(path,exist_ok=True)
+    save_path=os.path.join(path,str(count)+".jpg")
+    cv2.imwrite(save_path,save_image)
+    count+=1
+    
+    # # Lưu tệp vào ổ đĩa hoặc xử lý nó theo ý muốn
+    # with open(file.filename, "wb") as f:
+    #     f.write(await file.read())
 
  

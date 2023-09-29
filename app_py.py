@@ -3,7 +3,7 @@ from PyQt5.QtCore import QDir, Qt, QUrl, QSize
 from PyQt5.QtMultimedia import QMediaContent, QMediaPlayer
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 from PyQt5.QtWidgets import (QApplication, QFileDialog, QHBoxLayout, QLabel, 
-        QPushButton, QSizePolicy, QSlider, QStyle, QVBoxLayout, QWidget, QStatusBar,QLineEdit,QTextEdit,QMessageBox,QFrame)
+        QPushButton, QSizePolicy, QSlider, QStyle, QVBoxLayout,QStackedWidget, QWidget, QStatusBar,QLineEdit,QTextEdit,QMessageBox,QFrame)
 from PyQt5.QtWidgets import QApplication, QMainWindow
 from PyQt5 import QtWidgets, uic
 from app_QT import Ui_MainWindow
@@ -55,6 +55,7 @@ class Ui(QMainWindow):
         self.page=self.findChild(QWidget,"page")
         self.page_2=self.findChild(QWidget,"page_2")
         self.frame=self.findChild(QLabel,"frame")
+        self.stack_widget=self.findChild(QStackedWidget,"stackedWidget")
         self.current_page_index = 1
         self.pages=[self.page,self.page_2]
         # self.setCentralWidget(self.pages[self.current_page_index])
@@ -96,6 +97,7 @@ class Ui(QMainWindow):
         self.IMG=cv_img
         qt_img = self.convert_cv_qt(cv_img)
         self.frame.setPixmap(qt_img)
+        
     def Capture_Image(self):
         Fullname=self.label_name.toPlainText()
         self.FullName=Fullname
@@ -115,35 +117,16 @@ class Ui(QMainWindow):
             self.activate_thread(self.RTSP)
             self.switch_tab()
     def exit(self):
+        response = requests.post(self.api_server, data="Getgo")
         sys.exit()
     def back_tab(self):
-        Fullname=self.label_name.toPlainText()
-        self.FullName=Fullname
-        print(Fullname)
-        if len(Fullname)<1:
-            QMessageBox.warning(self,"Warning","Please insert name")
-        else:
-            self.switch_backtab()
+
+        self.switch_backtab()
     def switch_tab(self):
-        # Ẩn trang hiện tại
-        self.pages[self.current_page_index].hide()
-
-        # Chuyển đổi index để hiển thị trang khác
-        self.current_page_index = (self.current_page_index + 1) % len(self.pages)
-
-        # Hiển thị trang mới
-        self.setCentralWidget(self.pages[self.current_page_index])
-        self.pages[self.current_page_index].show()
+        self.stack_widget.setCurrentWidget(self.page)
     def switch_backtab(self):
-        # Ẩn trang hiện tại
-        self.pages[self.current_page_index].hide()
+        self.stack_widget.setCurrentWidget(self.page_2)
 
-        # Chuyển đổi index để hiển thị trang khác
-        self.current_page_index = (self.current_page_index -1) % len(self.pages)
-
-        # Hiển thị trang mới
-        self.setCentralWidget(self.pages[self.current_page_index])
-        self.pages[self.current_page_index].show()
     def send_image(self,img:np.ndarray):
         img=cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
         send_image=Image.fromarray(img)
@@ -153,10 +136,14 @@ class Ui(QMainWindow):
 
         response = requests.post(self.api_server, data=image2bytes)
         response = requests.post(self.api_server, data=self.FullName)
+        status=response._content
+        if status=="folder existed":
+            QMessageBox.warning(self,"Warning","directory already exists")
         if response.status_code == 200:
             QMessageBox.information(self,"Infor","Uploaded Image to Severs")
         else:
             QMessageBox.warning(self,"Warning",str(response.status_code))
+            
     def convert_cv_qt(self, cv_img):
         """Convert from an opencv image to QPixmap"""
         rgb_image = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)

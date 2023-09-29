@@ -1,12 +1,14 @@
 
-from face_core_recog import ArcFace
+from .face_core_recog import ArcFace
 from multiprocessing import Process
 import sys
 import datetime
 import os
 import numpy as np
 import cv2
-from Detect_retinaface import Face_Detection
+from .Detect_retinaface import Face_Detection
+import time
+
 class Face_recognition():
     def __init__(self):
         self.face_rec=ArcFace()
@@ -42,12 +44,12 @@ class Face_recognition():
         list_emb=[]
         for face in face_list:
             emb1=self.face_rec.calc_emb(face)
-            list_emb.append(emb1)
-
-                    
+            list_emb.append(emb1)                    
         return face_list,list_emb
-if __name__ =="__main__":
-    model=Face_recognition()
-    img=cv2.imread("a7.jpg")
-    face_list,list_emb=model.run(img)
-    print(list_emb)
+# if __name__ =="__main__":
+#     model=Face_recognition()
+#     tic=time.time()
+#     img=cv2.imread("a7.jpg")
+#     face_list,list_emb=model.run(img)
+#     print(time.time()-tic)
+#     print(list_emb)

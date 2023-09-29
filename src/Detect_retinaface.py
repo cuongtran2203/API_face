@@ -1,10 +1,9 @@
-from core.face_detect import *
 import torch
 import cv2
 import numpy as np
-from core.config import cfg_mnet
-from core.prior_box  import PriorBox
-from core.ultils import decode,decode_landm,py_cpu_nms
+from .core.config import cfg_mnet
+from .core.prior_box  import PriorBox
+from .core.ultils import decode,decode_landm,py_cpu_nms
 import onnxruntime as ort
 class Face_Detection():
     def __init__(self,model_path=None) -> None:
@@ -73,7 +72,7 @@ class Face_Detection():
         dets = np.concatenate((dets, landms), axis=1)
         return dets
     def detect(self,img):
-        input,scale=preprocess(img)
+        input,scale=self.preprocess(img)
         print(input.shape)
         onnx_input = {self.net.get_inputs()[0].name:input.detach().numpy()}
         output= self.net.run(None,onnx_input)
@@ -93,12 +92,12 @@ class Face_Detection():
             
         
 
-if __name__=="__main__":
-    model=Face_Detection(model_path="src/weights/Face_Detector.onnx")
-    img=cv2.imread("a7.jpg")
-    img=cv2.resize(img,(640,640))
-    tic=time.time()
-    faces=model.detect(img)
-    print("Time processing: {}".format(time.time()-tic))
-    cv2.imwrite("face.jpg",faces[0])
-    print("faces")
+# if __name__=="__main__":
+#     model=Face_Detection(model_path="src/weights/Face_Detector.onnx")
+#     img=cv2.imread("a7.jpg")
+#     img=cv2.resize(img,(640,640))
+#     tic=time.time()
+#     faces=model.detect(img)
+#     print("Time processing: {}".format(time.time()-tic))
+#     cv2.imwrite("face.jpg",faces[0])
+#     print("faces")
